@@ -21,10 +21,10 @@ jobs:
         with:
           python-version: "3.12"
       - name: Alert check
-        run: python report.py alert
+        run: python run.py alert
         env:
-          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
       - name: State save karein
         run: |
           git config user.name "crypto-bot"
