@@ -23,7 +23,7 @@ jobs:
       - name: Alert check
         run: python run.py alert
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.DESICRYPTOBOT }}
           TO_EMAIL: ${{ secrets.TO_EMAIL }}
       - name: State save karein
         run: |

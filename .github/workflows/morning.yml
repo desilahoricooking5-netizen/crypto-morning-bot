@@ -20,5 +20,5 @@ jobs:
       - name: Report bhejein
         run: python run.py "${{ github.event.inputs.mode || 'morning' }}"
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.DESICRYPTOBOT }}
           TO_EMAIL: ${{ secrets.TO_EMAIL }}
