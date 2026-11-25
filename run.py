@@ -12,8 +12,8 @@ ATTACHMENT = None  # subah ki report ke liye audio (base64 MP3)
 
 BANNER = (
     '<div style="background:#312e81;color:#e0e7ff;border-radius:10px;padding:10px 14px;'
-    'font-size:13px;margin:0 0 12px">&#128266; Audio report attach hai: '
-    'subah-ki-report.mp3 kholein aur play dabayein.</div>'
+    'font-size:13px;margin:0 0 12px">&#128266; Khabron ki audio attach hai: '
+    'subah-ki-khabrein.mp3 kholein aur play dabayein.</div>'
 )
 
 
@@ -30,7 +30,7 @@ def send_email(subject, html_body, text_body):
         "text": text_body,
     }
     if ATTACHMENT:
-        payload["attachments"] = [{"filename": "subah-ki-report.mp3", "content": ATTACHMENT}]
+        payload["attachments"] = [{"filename": "subah-ki-khabrein.mp3", "content": ATTACHMENT}]
     req = urllib.request.Request(
         "https://api.resend.com/emails",
         data=json.dumps(payload).encode("utf-8"),
