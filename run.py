@@ -6,6 +6,7 @@ import urllib.error
 import urllib.request
 
 import report
+import report_pretty
 
 
 def send_email(subject, html_body, text_body):
@@ -40,4 +41,4 @@ report.send_email = send_email
 
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "morning"
-    {"morning": report.morning, "alert": report.alert, "test": report.test}[mode]()
+    {"morning": report_pretty.morning, "alert": report.alert, "test": report.test}[mode]()
