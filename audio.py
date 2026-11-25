@@ -2,6 +2,7 @@
 import base64
 import io
 import re
+import time
 from datetime import datetime, timedelta, timezone
 
 import report
@@ -29,22 +30,39 @@ def pick_news():
     return items[:MAX_NEWS]
 
 
-def to_hindi(titles):
-    """Har headline ka Hindi tarjuma. Fail ho to us ki jagah None."""
-    try:
-        from deep_translator import GoogleTranslator
+def _engines():
+    from deep_translator import GoogleTranslator, MyMemoryTranslator
 
-        tr = GoogleTranslator(source="en", target="hi")
+    return [
+        ("google", GoogleTranslator(source="en", target="hi")),
+        ("mymemory", MyMemoryTranslator(source="en-GB", target="hi-IN")),
+    ]
+
+
+def to_hindi(titles):
+    """Har headline ka Hindi tarjuma. Ek translator fail ho to doosra try hota hai."""
+    try:
+        engines = _engines()
     except Exception as e:
         print("Translator load fail:", e)
         return [None] * len(titles)
     out = []
     for t in titles:
-        try:
-            out.append(tr.translate(t))
-        except Exception as e:
-            print("Tarjuma fail:", e)
-            out.append(None)
+        res = None
+        for name, tr in list(engines):
+            try:
+                r = tr.translate(t)
+                if r and r.strip() and "MYMEMORY WARNING" not in r.upper():
+                    res = r.strip()
+                    break
+                print(f"Tarjuma khali/limit ({name})")
+            except Exception as e:
+                print(f"Tarjuma fail ({name}):", str(e)[:80])
+            if engines and engines[0][0] == name:
+                engines.append(engines.pop(0))  # fail hone wala translator peeche
+        out.append(res)
+        time.sleep(0.4)
+    print(f"Tarjuma: {sum(1 for x in out if x)}/{len(out)}")
     return out
 
 
