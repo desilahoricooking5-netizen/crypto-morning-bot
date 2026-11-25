@@ -1,20 +1,64 @@
 """Subah ki khabron ka Hindi audio (MP3). gTTS + deep-translator (dono free, bina key ke)."""
 import base64
+import html as H
 import io
 import re
 import time
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 
 import report
 
 ORDINALS = ["पहली", "दूसरी", "तीसरी", "चौथी", "पाँचवीं", "छठी", "सातवीं", "आठवीं"]
 MAX_NEWS = 8
 OTHER_COINS = re.compile(r"\b(ethereum|ether|eth|solana|sol)\b", re.I)
+TAG = re.compile(r"<[^>]+>")
+TAIL = re.compile(r"\s*The post .*? appeared first on .*$", re.I | re.S)
+MAX_SUMMARY = 250  # translator ki free limit bachane ke liye
+
+
+def clean_summary(raw, title):
+    """Feed ke description se chhota saaf khulasa. Kuch kaam ka na ho to khali."""
+    if not raw:
+        return ""
+    t = H.unescape(TAG.sub(" ", raw))
+    t = TAIL.sub("", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    if len(t) < 40 or t.lower().startswith(title.lower()[:30]):
+        return ""
+    if len(t) > MAX_SUMMARY:
+        cut = t[:MAX_SUMMARY]
+        k = max(cut.rfind(". "), cut.rfind("? "), cut.rfind("! "))
+        t = cut[: k + 1] if k > 80 else cut.rsplit(" ", 1)[0]
+    return t
+
+
+def fetch_items():
+    items = []
+    for source, url in report.FEEDS:
+        try:
+            root = ET.fromstring(report.get(url))
+            for it in root.iter("item"):
+                title = (it.findtext("title") or "").strip()
+                link = (it.findtext("link") or "").strip()
+                pub = it.findtext("pubDate")
+                if not title or not link or not pub:
+                    continue
+                t = parsedate_to_datetime(pub)
+                if t.tzinfo is None:
+                    t = t.replace(tzinfo=timezone.utc)
+                summary = clean_summary(it.findtext("description"), title)
+                items.append({"source": source, "title": title, "link": link, "time": t, "summary": summary})
+        except Exception as e:
+            print("Audio feed fail:", source, e)
+    return items
 
 
 def pick_news():
     cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
-    items = [n for n in report.get_news() if n["time"] >= cutoff]
+    items = fetch_items() or [dict(n, summary="") for n in report.get_news()]
+    items = [n for n in items if n["time"] >= cutoff]
 
     def score(n):
         t = n["title"]
@@ -74,13 +118,17 @@ def build_segments():
         segs.append(("hi", "com", "पिछले चौबीस घंटे में कोई ख़ास ख़बर नहीं मिली।"))
     else:
         hindi = to_hindi([n["title"] for n in news])
+        sums_hi = iter(to_hindi([n["summary"] for n in news if n["summary"]]))
         for i, (n, h) in enumerate(zip(news, hindi)):
             label = f"{ORDINALS[i]} ख़बर।"
+            sh = next(sums_hi) if n["summary"] else None
             if h:
-                segs.append(("hi", "com", f"{label} {h}"))
+                segs.append(("hi", "com", f"{label} {h}" + (f" {sh}" if sh else "")))
             else:
                 segs.append(("hi", "com", label))
                 segs.append(("en", "co.in", n["title"]))
+                if sh:
+                    segs.append(("hi", "com", sh))
     segs.append(("hi", "com", "पूरी ख़बरें और लिंक ईमेल में हैं। यह सिर्फ़ जानकारी है, ट्रेडिंग की सलाह नहीं।"))
     return segs
 
