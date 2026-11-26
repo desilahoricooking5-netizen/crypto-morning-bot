@@ -4,6 +4,7 @@ import re
 from datetime import datetime, timedelta, timezone
 
 import report
+import macro
 
 META = {
     "BTC": ("Bitcoin", "#f7931a"),
@@ -165,7 +166,7 @@ def morning():
     others = [n for n in news if n["link"] not in used][:6]
 
     body = f"""<!DOCTYPE html>
-<html><body style="margin:0;padding:0;background:{PAGE_BG}" bgcolor="{PAGE_BG}">
+<html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:{PAGE_BG}" bgcolor="{PAGE_BG}">
 <table width="100%" cellpadding="0" cellspacing="0" bgcolor="{PAGE_BG}" style="background:{PAGE_BG}">
 <tr><td align="center" style="padding:20px 10px">
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;font-family:Arial,Helvetica,sans-serif">
@@ -178,6 +179,7 @@ def morning():
 <tr><td>
 <div style="color:{MUTED};font-size:12px;letter-spacing:2px;margin:0 0 8px 4px">EK NAZAR MEIN</div>
 {glance}
+{macro.summary_html()}
 {cards}
 <table width="100%" cellpadding="0" cellspacing="0" bgcolor="{CARD_BG}" style="background:{CARD_BG};border-radius:14px;margin-bottom:18px">
 <tr><td style="padding:18px 20px">

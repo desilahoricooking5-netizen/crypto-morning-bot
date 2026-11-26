@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 
 import report
+import macro
 
 ORDINALS = ["पहली", "दूसरी", "तीसरी", "चौथी", "पाँचवीं", "छठी", "सातवीं", "आठवीं"]
 MAX_NEWS = 8
@@ -129,6 +130,7 @@ def build_segments():
                 segs.append(("en", "co.in", n["title"]))
                 if sh:
                     segs.append(("hi", "com", sh))
+    segs.append(("hi", "com", macro.audio_line()))
     segs.append(("hi", "com", "पूरी ख़बरें और लिंक ईमेल में हैं। यह सिर्फ़ जानकारी है, ट्रेडिंग की सलाह नहीं।"))
     return segs
 
