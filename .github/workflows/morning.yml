@@ -17,8 +17,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Audio ke liye gTTS install karein
-        run: pip install gTTS deep-translator
+      - name: Audio aur chart ke liye libraries install karein
+        run: pip install gTTS deep-translator pandas numpy matplotlib
       - name: Report bhejein
         run: python run.py "${{ github.event.inputs.mode || 'morning' }}"
         env:
